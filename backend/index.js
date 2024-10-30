@@ -24,16 +24,14 @@ app.use(express.json()) //with the help of express.json() whatever  req we will 
 // database  connection with MongoDb 
 
 
-mongoose.connect(process.env.MONGODB_URI, {
-    useNewUrlParser: true,
-    useUnifiedTopology: true,
-})
-.then(() => {
+mongoose.connect(process.env.MONGODB_URI)
+  .then(() => {
     console.log("Connected to MongoDB");
-})
-.catch((error) => {
+  })
+  .catch((error) => {
     console.error("MongoDB connection error:", error);
-});
+  });
+
 
 
 
