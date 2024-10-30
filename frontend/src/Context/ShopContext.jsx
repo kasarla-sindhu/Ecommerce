@@ -14,12 +14,12 @@ const ShopContextProvider=(props)=>{
     const [cartItems,setCartItems]=useState(getDefaultCart())
 
     useEffect(()=>{
-        fetch('http://localhost:5000/allproducts')
+        fetch('https://ecommerce-lcw5.onrender.com/allproducts')
         .then((res)=> res.json())
         .then((data)=> setallproduct(data))
 
         if(localStorage.getItem('auth-token')){
-            fetch('http://localhost:5000/getcart',{
+            fetch('https://ecommerce-lcw5.onrender.com/getcart',{
                 method:'POST',
                 headers:{
                     Accept:'application/json',
@@ -37,7 +37,7 @@ const ShopContextProvider=(props)=>{
         setCartItems((prev)=> ({...prev,[itemId]:prev[itemId]+1}))
         console.log(cartItems);
         if(localStorage.getItem('auth-token')){
-            fetch('http://localhost:5000/addtocart',{
+            fetch('https://ecommerce-lcw5.onrender.com/addtocart',{
                 method:'POST',
                 headers:{
                     Accept:'application/form-data',
@@ -53,7 +53,7 @@ const ShopContextProvider=(props)=>{
     const removeFromCart=(itemId)=>{
         setCartItems((prev)=> ({...prev,[itemId]:prev[itemId]-11}))
         if(localStorage.getItem('auth-token')){
-            fetch('http://localhost:5000/removefromcart',{
+            fetch('https://ecommerce-lcw5.onrender.com/removefromcart',{
                 method:'POST',
                 headers:{
                     Accept:'application/form-data',
