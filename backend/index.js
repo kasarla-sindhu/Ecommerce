@@ -1,5 +1,7 @@
 //In this file our express server is running
+require('dotenv').config();
 const port=process.env.PORT || 5000;
+
 
 //import dependencies
 const express=require('express')
@@ -13,15 +15,26 @@ const jwt=require('jsonwebtoken')
 const multer=require('multer')
 const path=require('path') //using this path we can get access to backend directory in our express app
 const cors=require('cors');
-const { type } = require('os');
-const { log } = require('console');
 
 
+app.use(cors())  //using this out react project connect to express app on 5000 port
 app.use(express.json()) //with the help of express.json() whatever  req we will get from response that is automatically parsed through json
-app.use(cors()) //using this out react project connect to express app on 4000 port
+ 
 
 // database  connection with MongoDb 
-mongoose.connect("mongodb+srv://sindhukasarla999:Sindhu$123@cluster0.y0z9v.mongodb.net/e-commerce")
+
+
+mongoose.connect(process.env.MONGODB_URI, {
+    useNewUrlParser: true,
+    useUnifiedTopology: true,
+})
+.then(() => {
+    console.log("Connected to MongoDB");
+})
+.catch((error) => {
+    console.error("MongoDB connection error:", error);
+});
+
 
 
 app.get("/",(req,res)=>{
@@ -42,12 +55,15 @@ const upload=multer({storage:storage})
 app.use('/images',express.static('upload/images'))
 
 //creation upload endpoint for images
-app.post('/upload',upload.single('product'),(req,res)=>{
+app.post('/upload', upload.single('product'), (req, res) => {
+    if (!req.file) {
+        return res.status(400).json({ success: 0, message: "Image upload failed." });
+    }
     res.json({
-        success:1,
-        image_url:`http://localhost:${port}/images/${req.file.filename}`
-    })
-})
+        success: 1,
+        image_url: `http://localhost:${port}/images/${req.file.filename}`
+    });
+});
 
 // product addition to mongodb atlas database - whenever we upload any obj in mgdb database before we have to create a scheme
 //Schema for creatin products
@@ -232,22 +248,20 @@ app.get('/popularinwomen',async(req,res)=>{
 
 //creating midleware to fetch user
 
-const fetchUser=async(req,res,next)=>{
-    const token=req.header('auth-token');
-    if(!token){
-        res.status(401).send({errors:"Please Authenticate using valid token"})
+const fetchUser = async (req, res, next) => {
+    const token = req.header('auth-token');
+    if (!token) {
+        return res.status(401).json({ error: "Please authenticate using a valid token" });
     }
-    else{
-        try{
-            const data=jwt.verify(token,'secret_ecom')
-            req.user=data.user;
-            next()
-        }
-        catch(error){
-            res.status(401).send({errors:"Please authenticate using valid token"})
-        }
+    try {
+        const data = jwt.verify(token, 'secret_ecom');
+        req.user = data.user;
+        next();
+    } catch (error) {
+        return res.status(401).json({ error: "Please authenticate using a valid token" });
     }
-}
+};
+
 
 // creating endpoint for adding products in cartdata
 
@@ -274,13 +288,13 @@ app.post('/getcart',fetchUser,async(req,res)=>{
 })
 
 //API creation
-app.listen(port,(err)=>{
-    if(!err){
-        console.log(`Server is running on Port ${port}`)
+app.listen(port, (err) => {
+    if (!err) {
+        console.log(`Server is running on Port ${port}`);
+    } else {
+        console.error(`Server error: ${err}`);
     }
-    else{
-        console.log(`Error : ${err}`)
-    }
-})
+});
+
 
 
