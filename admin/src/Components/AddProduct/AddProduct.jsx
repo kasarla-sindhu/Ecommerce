@@ -28,7 +28,7 @@ const AddProduct = () => {
         let formData =new FormData()
         formData.append('product',image);  //field name product
 
-        await fetch('https://ecommerce-lcw5.onrender.com/upload',{
+        await fetch('https://ecommerce-pei1.onrender.com/upload',{
             method:'POST',
             headers:{
                 Accept:'application/json'
@@ -39,7 +39,7 @@ const AddProduct = () => {
         if(responseData.success){
             product.image=responseData.image_url
             console.log(product)
-            await fetch('https://ecommerce-lcw5.onrender.com/addproduct',{
+            await fetch('https://ecommerce-pei1.onrender.com/addproduct',{
                 method:'POST',
                 headers:{
                     Accept:'application/json',

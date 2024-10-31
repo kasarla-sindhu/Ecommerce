@@ -11,7 +11,7 @@ const LoginSignup = () => {
 
   const loginUser=async()=>{
     let responseData
-    await fetch('https://ecommerce-lcw5.onrender.com/login',{
+    await fetch('https://ecommerce-pei1.onrender.com/login',{
       method:'POST',
       headers:{
         Accept:'application/form-data',
@@ -33,7 +33,7 @@ const LoginSignup = () => {
 
   const signupUser=async()=>{
     let responseData
-    await fetch('https://ecommerce-lcw5.onrender.com/signup',{
+    await fetch('https://ecommerce-pei1.onrender.com/signup',{
       method:'POST',
       headers:{
         Accept:'application/form-data',
