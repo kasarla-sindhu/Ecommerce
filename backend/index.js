@@ -16,8 +16,14 @@ const multer=require('multer')
 const path=require('path') //using this path we can get access to backend directory in our express app
 const cors=require('cors');
 
+const corsOptions = {
+    origin: ['https://ecommerce-website-570a87.netlify.app', 'http://localhost:3000'],
+    methods: ['GET', 'POST', 'PUT', 'DELETE'],
+    credentials: true,
+};
 
-app.use(cors())  //using this out react project connect to express app on 5000 port
+  
+app.use(cors(corsOptions));  //using this out react project connect to express app on 5000 port
 app.use(express.json()) //with the help of express.json() whatever  req we will get from response that is automatically parsed through json
  
 
@@ -59,7 +65,7 @@ app.post('/upload', upload.single('product'), (req, res) => {
     }
     res.json({
         success: 1,
-        image_url: `http://localhost:${port}/images/${req.file.filename}`
+        image_url: `${req.protocol}://${req.get('host')}/images/${req.file.filename}`
     });
 });
 
@@ -198,7 +204,7 @@ app.post('/signup',async(req,res)=>{
         }
     }
 
-    const token=jwt.sign(data,'secret_ecom')
+    const token = jwt.sign(data, process.env.JWT_SECRET);
     res.json({success:true,token})
 })
 
@@ -214,7 +220,7 @@ app.post('/login',async(req,res)=>{
                     id:user.id
                 }
             }
-            const token=jwt.sign(data,'secret_ecom')
+            const token = jwt.sign(data, process.env.JWT_SECRET);
             res.json({success:true,token});
         }
         else{
