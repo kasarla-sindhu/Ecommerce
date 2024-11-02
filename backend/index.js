@@ -1,34 +1,35 @@
-//In this file our express server is running
 require('dotenv').config();
 const port=process.env.PORT || 5000;
 
 
-//import dependencies
 const express=require('express')
 
-//creating app instance using express
+
 const app=express();
 
-//initializing mongoose , jsonwebtoken,multer package
+
 const mongoose=require('mongoose')
 const jwt=require('jsonwebtoken')
 const multer=require('multer')
-const path=require('path') //using this path we can get access to backend directory in our express app
+const path=require('path')
 const cors=require('cors');
 
 const corsOptions = {
-    origin: ['https://ecommerce-website-570a87.netlify.app', 'http://localhost:3000'],
-    methods: ['GET', 'POST', 'PUT', 'DELETE'],
+    origin: [
+        'https://ecommerce-website-570a87.netlify.app', 
+        'http://localhost:5173',
+        'http://localhost:3000',
+    ],
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization', 'Access-Control-Allow-Origin'],
     credentials: true,
 };
 
   
-app.use(cors(corsOptions));  //using this out react project connect to express app on 5000 port
-app.use(express.json()) //with the help of express.json() whatever  req we will get from response that is automatically parsed through json
+app.use(cors(corsOptions));
+app.options('*', cors(corsOptions));  
+app.use(express.json()) 
  
-
-// database  connection with MongoDb 
-
 
 mongoose.connect(process.env.MONGODB_URI)
   .then(() => {
@@ -58,8 +59,8 @@ const upload=multer({storage:storage})
 
 app.use('/images',express.static('upload/images'))
 
-//creation upload endpoint for images
-app.post('/upload', upload.single('product'), (req, res) => {
+
+app.post('/upload', cors(corsOptions), upload.single('product'), (req, res) => {
     if (!req.file) {
         return res.status(400).json({ success: 0, message: "Image upload failed." });
     }
@@ -69,10 +70,9 @@ app.post('/upload', upload.single('product'), (req, res) => {
     });
 });
 
-// product addition to mongodb atlas database - whenever we upload any obj in mgdb database before we have to create a scheme
-//Schema for creatin products
 
-const Product=mongoose.model("Product",{   //product is name of schema and obj is product model
+
+const Product=mongoose.model("Product",{   
     id:{
         type:Number,
         required: true,
@@ -107,7 +107,7 @@ const Product=mongoose.model("Product",{   //product is name of schema and obj i
     },
 })
 
-//we will use the schema to add product in database
+
 
 app.post('/addproduct',async(req,res)=>{
     let products=await Product.find({})
@@ -137,7 +137,7 @@ app.post('/addproduct',async(req,res)=>{
     })
 })
 
-// Creating API for deleting Products
+
 
 app.post('/removeproduct',async (req,res)=>{
     await Product.findOneAndDelete({id:req.body.id})
@@ -148,7 +148,7 @@ app.post('/removeproduct',async (req,res)=>{
     })
 })
 
-//Creating API for getting all products
+
 
 app.get('/allproducts',async(req,res)=>{
     let products = await Product.find({})
@@ -156,7 +156,7 @@ app.get('/allproducts',async(req,res)=>{
     res.send(products)
 })
 
-//schema for user model
+
 
 const Users=mongoose.model('Users',{
     name:{
@@ -178,7 +178,7 @@ const Users=mongoose.model('Users',{
     }
 })
 
-//creation End Point for registering users
+
 
 app.post('/signup',async(req,res)=>{
     let check=await Users.findOne({email:req.body.email})
@@ -208,7 +208,7 @@ app.post('/signup',async(req,res)=>{
     res.json({success:true,token})
 })
 
-//creating End Point for user login 
+
 
 app.post('/login',async(req,res)=>{
     let user=await Users.findOne({email:req.body.email});
@@ -232,7 +232,7 @@ app.post('/login',async(req,res)=>{
     }
 })
 
-// creating endpoint for newcollection data
+
 
 app.get('/newcollections',async(req,res)=>{
     let products=await Product.find({});
@@ -241,7 +241,7 @@ app.get('/newcollections',async(req,res)=>{
     res.send(newcollection)
 })
 
-//creating endpoint for popular in women section
+
 
 app.get('/popularinwomen',async(req,res)=>{
     let products=await Product.find({category:'women'})
@@ -250,7 +250,7 @@ app.get('/popularinwomen',async(req,res)=>{
     res.send(popularinwomen)
 })
 
-//creating midleware to fetch user
+
 
 const fetchUser = async (req, res, next) => {
     const token = req.header('auth-token');
@@ -258,7 +258,7 @@ const fetchUser = async (req, res, next) => {
         return res.status(401).json({ error: "Please authenticate using a valid token" });
     }
     try {
-        const data = jwt.verify(token, 'secret_ecom');
+        const data = jwt.verify(token, process.env.JWT_SECRET);
         req.user = data.user;
         next();
     } catch (error) {
@@ -267,7 +267,7 @@ const fetchUser = async (req, res, next) => {
 };
 
 
-// creating endpoint for adding products in cartdata
+
 
 app.post('/addtocart',fetchUser,async(req,res)=>{
     let userdata=await Users.findOne({_id:req.user.id});
@@ -276,7 +276,7 @@ app.post('/addtocart',fetchUser,async(req,res)=>{
     res.send("Added")
 })
 
-//creating endpoint to remove product from cart data
+
 app.post('/removefromcart',fetchUser,async(req,res)=>{
     let userdata=await Users.findOne({_id:req.user.id});
     if(userdata.cartData[req.body.itemId] >0)
@@ -285,13 +285,13 @@ app.post('/removefromcart',fetchUser,async(req,res)=>{
     res.send("Removed")
 })
 
-//creating endpoint to get cartdata
+
 app.post('/getcart',fetchUser,async(req,res)=>{
     let userData=await Users.findOne({_id:req.user.id})
     res.json(userData.cartData)
 })
 
-//API creation
+
 app.listen(port, (err) => {
     if (!err) {
         console.log(`Server is running on Port ${port}`);
